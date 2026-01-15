@@ -3,27 +3,63 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: rate-limiting-scraper-dev
+    container_name: scraper-api-dev
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
     env_file:
       - .env
+    environment:
+      - REDIS_HOST=redis
+      - QUEUE_ENABLED=true
     volumes:
       - ./src:/app/src
       - ./package.json:/app/package.json
       - ./tsconfig.json:/app/tsconfig.json
       - ./.env:/app/.env
+      - ./data:/app/data
     depends_on:
       - redis
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: scraper-worker-dev
+    env_file:
+      - .env
+    environment:
+      - REDIS_HOST=redis
+      - QUEUE_ENABLED=true
+      - QUEUE_CONCURRENCY=3
+    volumes:
+      - ./src:/app/src
+      - ./package.json:/app/package.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./.env:/app/.env
+      - ./data:/app/data
+    depends_on:
+      - redis
+      - app
+    restart: unless-stopped
+    command: npm run worker:dev
+    deploy:
+      replicas: 2
 
   test:
     build:
       context: .
       dockerfile: Dockerfile.test
-    container_name: rate-limiting-scraper-test
+    container_name: scraper-test
     env_file:
       - .env
+    environment:
+      - REDIS_HOST=redis
     volumes:
       - ./src:/app/src
       - ./tests:/app/tests
@@ -38,7 +74,13 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: rate-limiting-scraper-redis-dev
+    container_name: scraper-redis-dev
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:

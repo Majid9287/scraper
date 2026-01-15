@@ -1,5 +1,11 @@
 export { redisService } from "./redis.service";
 export { proxyService } from "./proxy.service";
 export { rateLimitService } from "./rate-limit.service";
+export { advancedRateLimiterService } from "./advanced-rate-limiter.service";
 export { httpClientService } from "./http-client.service";
 export { scrapeService } from "./scrape.service";
+export { playwrightScraperService, setMonitoringService } from "./playwright-scraper.service";
+export { captchaService } from "./captcha.service";
+export { sessionService } from "./session.service";
+export { queueService } from "./queue.service";
+export { monitoringService } from "./monitoring.service";

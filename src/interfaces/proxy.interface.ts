@@ -4,17 +4,32 @@
 export interface IProxy {
   ip: string;
   port: number;
-  protocol: "http" | "https";
+  protocol: "http" | "https" | "socks4" | "socks5";
   provider: ProxyProviderType;
-  metadata?: Record<string, any>;
+  username?: string;
+  password?: string;
+  metadata?: IProxyMetadata;
+}
+
+/**
+ * Proxy metadata interface
+ */
+export interface IProxyMetadata {
+  country?: string;
+  city?: string;
+  isp?: string;
+  asn?: string;
+  lastChecked?: string;
+  reliability?: "low" | "medium" | "high";
+  speed?: number;
+  anonymity?: "transparent" | "anonymous" | "elite";
+  source?: string;
 }
 
 /**
  * Proxy provider types
- * Currently only 'free' is supported
- * TODO: Add 'premium' and 'rotating' in the future
  */
-export type ProxyProviderType = "free" | "premium" | "rotating";
+export type ProxyProviderType = "free" | "residential" | "datacenter" | "rotating" | "mobile";
 
 /**
  * Proxy provider interface
@@ -22,14 +37,18 @@ export type ProxyProviderType = "free" | "premium" | "rotating";
 export interface IProxyProvider {
   readonly providerType: ProxyProviderType;
   getProxies(): Promise<IProxy[]>;
+  refreshProxies?(): Promise<void>;
+  validateProxy?(proxy: IProxy): Promise<boolean>;
 }
 
 /**
  * Proxy service interface
  */
 export interface IProxyService {
-  getNextProxy(): Promise<IProxy>;
+  getNextProxy(preferResidential?: boolean): Promise<IProxy>;
   getAvailableProxies(): Promise<IProxy[]>;
+  markProxyFailed(proxy: IProxy): Promise<void>;
+  markProxySuccess(proxy: IProxy): Promise<void>;
 }
 
 /**
@@ -37,4 +56,30 @@ export interface IProxyService {
  */
 export interface IProxyProviderFactory {
   getProvider(type: ProxyProviderType): IProxyProvider;
+  registerProvider(type: ProxyProviderType, provider: IProxyProvider): void;
+}
+
+/**
+ * Proxy health status
+ */
+export interface IProxyHealth {
+  proxy: IProxy;
+  successCount: number;
+  failureCount: number;
+  lastSuccess?: number;
+  lastFailure?: number;
+  averageResponseTime?: number;
+  isHealthy: boolean;
+}
+
+/**
+ * Residential proxy configuration
+ */
+export interface IResidentialProxyConfig {
+  apiKey: string;
+  baseUrl: string;
+  country?: string;
+  city?: string;
+  sessionType?: "rotating" | "sticky";
+  sessionDuration?: number;
 }
