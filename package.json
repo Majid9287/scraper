@@ -1,12 +1,13 @@
 {
   "name": "rate-limiting-scraper",
-  "version": "1.0.0",
-  "description": "A Node.js Express TypeScript application for rate-limited web scraping",
+  "version": "2.0.0",
+  "description": "Industry-level Node.js Express TypeScript application for anti-detection web scraping with Playwright",
   "main": "dist/setup.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/setup.ts",
     "build": "tsc",
     "start": "node dist/setup.js",
+    "postinstall": "npx playwright install chromium",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -16,17 +17,24 @@
     "docker:dev": "docker-compose up --build",
     "docker:prod": "docker-compose -f docker-compose.prod.yml up --build",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
+    "worker": "node dist/worker.js",
+    "worker:dev": "ts-node-dev --respawn --transpile-only src/worker.ts"
   },
   "dependencies": {
-    "@types/axios": "^0.9.36",
     "@types/compression": "^1.8.1",
+    "@types/uuid": "^9.0.7",
     "axios": "^1.11.0",
+    "bullmq": "^5.1.0",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^5.1.0",
-    "redis": "^4.6.10"
+    "playwright": "^1.40.0",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "redis": "^4.6.10",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

@@ -6,9 +6,7 @@ import {
 
 /**
  * Provider factory for creating proxy providers
- * Currently only supports free provider
- *
- * TODO: Future providers (premium, rotating) can be added here
+ * Supports multiple provider types: free, residential, datacenter
  */
 class ProxyProviderFactory implements IProxyProviderFactory {
   private providers: Map<ProxyProviderType, IProxyProvider> = new Map();
@@ -19,7 +17,7 @@ class ProxyProviderFactory implements IProxyProviderFactory {
 
   /**
    * Get provider by type with type safety
-   * @param type - Provider type (currently only 'free' is supported)
+   * @param type - Provider type
    * @returns Provider instance
    */
   getProvider(type: ProxyProviderType): IProxyProvider {
@@ -31,17 +29,46 @@ class ProxyProviderFactory implements IProxyProviderFactory {
   }
 
   /**
+   * Register a new provider
+   * @param type - Provider type
+   * @param provider - Provider instance
+   */
+  registerProvider(type: ProxyProviderType, provider: IProxyProvider): void {
+    this.providers.set(type, provider);
+    console.log(`[ProxyProviderFactory] Registered provider: ${type}`);
+  }
+
+  /**
+   * Check if provider is registered
+   * @param type - Provider type
+   * @returns true if provider exists
+   */
+  hasProvider(type: ProxyProviderType): boolean {
+    return this.providers.has(type);
+  }
+
+  /**
+   * Get all registered provider types
+   * @returns Array of provider types
+   */
+  getAvailableProviders(): ProxyProviderType[] {
+    return Array.from(this.providers.keys());
+  }
+
+  /**
    * Initialize providers
-   * Currently only initializes the free provider
    */
   private initializeProviders(): void {
+    // Initialize free proxy provider
     const { FreeProxyProvider } = require("./free-proxy-provider");
-
     this.providers.set("free", new FreeProxyProvider());
 
-    // TODO: Add premium and rotating providers in the future
-    // this.providers.set("premium", new PremiumProxyProvider());
-    // this.providers.set("rotating", new RotatingProxyProvider());
+    // Initialize residential proxy provider
+    const { ResidentialProxyProvider, DatacenterProxyProvider } = require("./residential-proxy-provider");
+    this.providers.set("residential", new ResidentialProxyProvider());
+    this.providers.set("datacenter", new DatacenterProxyProvider());
+
+    console.log(`[ProxyProviderFactory] Initialized providers: ${this.getAvailableProviders().join(", ")}`);
   }
 }
 
